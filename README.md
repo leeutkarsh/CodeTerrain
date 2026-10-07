@@ -113,7 +113,7 @@ A modern Streamlit interface with everything in one place (see below).
 Clone the repository and install the dependencies from `requirements.txt`:
 
 ```bash
-git clone https://github.com/<your-username>/CodeTerrain.git
+git clone https://github.com/<repo-url>
 cd CodeTerrain
 
 python -m venv .venv                 # optional but recommended
