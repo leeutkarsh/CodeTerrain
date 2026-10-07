@@ -1,0 +1,1232 @@
+/* ==========================================================================
+   CodeTerrain — compact, minimal, flat dark theme.
+   Everything tunable lives in :root. No external fonts or network requests,
+   so nothing flashes or shifts while the page loads.
+   ========================================================================== */
+:root {
+  /* Layout */
+  --page-width: 1080px;
+  --page-top: 0.9rem;
+  --page-side: 1.25rem;
+  --page-bottom: 5rem;
+  --canvas-max-height: 520px; /* UI.py overrides this from RESPONSE_CANVAS_MAX_HEIGHT */
+  --gap: 0.6rem;
+  --gap-tight: 0.4rem;
+
+  /* Shape and type */
+  --r-sm: 6px;
+  --r: 8px;
+  --r-lg: 12px;
+  --control: 2rem;
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, "Liberation Mono", monospace;
+  --text: 0.875rem;
+  --text-sm: 0.78rem;
+  --text-xs: 0.68rem;
+
+  /* Colour */
+  color-scheme: dark;
+  --bg: #0b0d12;
+  --surface: #10131a;
+  --raised: #151922;
+  --raised-hover: #1b2030;
+  --ink: #e6e9ef;
+  --muted: #9099a8;
+  --faint: #667085;
+  --line: #1e232d;
+  --line-2: #2a303c;
+  --accent: #8b7cf6;
+  --accent-hover: #a095ff;
+  --accent-deep: #7565e6;
+  --accent-tint: rgba(139, 124, 246, 0.1);
+  --accent-line: rgba(139, 124, 246, 0.32);
+  --good: #4cc9a4;
+  --bad: #ef7b88;
+  --bad-bg: rgba(239, 123, 136, 0.08);
+  --bad-line: rgba(239, 123, 136, 0.28);
+}
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(144, 153, 168, 0.3) transparent;
+}
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+.stApp,
+[data-testid="stAppViewContainer"] {
+  background: var(--bg);
+  color: var(--ink);
+  font-size: var(--text);
+  line-height: 1.5;
+}
+
+.stApp,
+.stApp p,
+.stApp li,
+.stApp label,
+.stApp input,
+.stApp textarea,
+.stApp button,
+.stApp summary,
+.stApp h1,
+.stApp h2,
+.stApp h3,
+.stApp h4 {
+  font-family: var(--font);
+}
+
+a {
+  color: var(--accent-hover);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Streamlit chrome we do not need: deploy button, rainbow bar, heading anchors,
+   and the container that only holds this <style> block (it would add a gap). */
+[data-testid="stDecoration"],
+[data-testid="stMainMenu"],
+#MainMenu,
+[data-testid="stAppDeployButton"],
+.stDeployButton,
+[data-testid="stHeaderActionElements"] {
+  display: none !important;
+}
+
+.stApp [data-testid="stElementContainer"]:has(style),
+.stApp [data-testid="stElementContainer"]:has(.card-marker),
+.stApp .element-container:has(style),
+.stApp .element-container:has(.card-marker) {
+  display: none;
+}
+
+[data-testid="stHeader"] {
+  height: 2.25rem;
+  background: transparent;
+}
+
+.block-container,
+[data-testid="stMainBlockContainer"] {
+  max-width: var(--page-width);
+  padding: var(--page-top) var(--page-side) var(--page-bottom);
+}
+
+[data-testid="stVerticalBlock"] {
+  gap: var(--gap);
+}
+
+.stApp [data-testid="stHorizontalBlock"] {
+  gap: var(--gap-tight);
+}
+
+/* ==========================================================================
+   TYPE
+   ========================================================================== */
+.stApp [data-testid="stMarkdownContainer"] {
+  margin-bottom: 0 !important;
+  font-size: var(--text);
+}
+
+.stApp [data-testid="stMarkdownContainer"] p,
+.stApp [data-testid="stMarkdownContainer"] li {
+  font-size: inherit;
+  line-height: 1.6;
+}
+
+.stApp [data-testid="stMarkdownContainer"] p {
+  margin: 0 0 0.5rem;
+}
+
+.stApp [data-testid="stMarkdownContainer"] > *:last-child {
+  margin-bottom: 0 !important;
+}
+
+.stApp [data-testid="stMarkdownContainer"] ul,
+.stApp [data-testid="stMarkdownContainer"] ol {
+  margin: 0 0 0.5rem;
+  padding-left: 1.2rem;
+}
+
+.stApp [data-testid="stMarkdownContainer"] li {
+  margin: 0 0 0.2rem;
+  padding-left: 0.15rem;
+}
+
+.stApp [data-testid="stMarkdownContainer"] li::marker {
+  color: var(--accent);
+}
+
+.stApp h1,
+.stApp h2,
+.stApp h3,
+.stApp h4 {
+  color: var(--ink);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.stApp [data-testid="stMarkdownContainer"] h1,
+.stApp [data-testid="stMarkdownContainer"] h2,
+.stApp [data-testid="stMarkdownContainer"] h3,
+.stApp [data-testid="stMarkdownContainer"] h4 {
+  margin: 0.85rem 0 0.35rem !important;
+  padding: 0;
+}
+
+.stApp [data-testid="stMarkdownContainer"] h1 { font-size: 1.2rem; }
+.stApp [data-testid="stMarkdownContainer"] h2 { font-size: 1.05rem; }
+.stApp [data-testid="stMarkdownContainer"] h3 { font-size: 0.95rem; }
+.stApp [data-testid="stMarkdownContainer"] h4 { font-size: 0.88rem; }
+
+.stApp [data-testid="stMarkdownContainer"] > :first-child,
+.stApp [data-testid="stMarkdownContainer"] > :first-child :is(h1, h2, h3, h4) {
+  margin-top: 0 !important;
+}
+
+.stApp [data-testid="stMarkdownContainer"] code {
+  padding: 0.08em 0.35em;
+  border-radius: 4px;
+  color: #cfc8ff;
+  background: rgba(139, 124, 246, 0.12);
+  font-family: var(--mono);
+  font-size: 0.86em;
+}
+
+.stApp [data-testid="stMarkdownContainer"] pre {
+  max-width: 100%;
+  margin: 0 0 0.5rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: #080a0f;
+}
+
+.stApp [data-testid="stMarkdownContainer"] pre code {
+  padding: 0;
+  color: #dce2eb;
+  background: transparent;
+  font-size: 0.8rem;
+}
+
+.stApp [data-testid="stMarkdownContainer"] blockquote {
+  margin: 0 0 0.5rem;
+  padding: 0.1rem 0.8rem;
+  border-left: 2px solid var(--accent);
+  color: var(--muted);
+}
+
+.stApp [data-testid="stMarkdownContainer"] table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.stApp [data-testid="stMarkdownContainer"] th,
+.stApp [data-testid="stMarkdownContainer"] td {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--line);
+}
+
+.stApp hr {
+  margin: 0.6rem 0;
+  border-color: var(--line);
+}
+
+[data-testid="stCaptionContainer"] {
+  color: var(--faint);
+  font-size: var(--text-xs);
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   SIDEBAR
+   ========================================================================== */
+[data-testid="stSidebar"] {
+  border-right: 1px solid var(--line);
+  background: var(--surface);
+}
+
+[data-testid="stSidebarHeader"] {
+  height: 2.25rem;
+  min-height: 2.25rem;
+  margin: 0;
+  padding: 0.4rem 0.75rem;
+}
+
+[data-testid="stSidebarUserContent"] {
+  padding: 0 1rem 1rem;
+}
+
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+  gap: 0.4rem;
+}
+
+[data-testid="stSidebar"] [data-testid="stHorizontalBlock"] {
+  gap: 0.35rem;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0 0 0.6rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.topbar-logo,
+.topbar-mark {
+  display: block;
+  width: 1.7rem;
+  height: 1.7rem;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.topbar-mark {
+  display: grid;
+  place-items: center;
+  color: #c7beff;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.topbar-name {
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.side-label {
+  margin-top: 0.3rem;
+  color: var(--faint);
+  font-size: var(--text-xs);
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.project-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  color: var(--ink);
+  font-size: 0.85rem;
+}
+
+.project-summary strong {
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-path {
+  overflow: hidden;
+  margin: -0.15rem 0 0 0.9rem;
+  color: var(--faint);
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Status dots share one look. */
+.eyebrow span,
+.project-pulse,
+.canvas-status i {
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.4rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--good);
+}
+
+/* History list: tight rows, selected chat highlighted, titles ellipsised. */
+.st-key-history-list,
+[data-testid="stSidebar"] .st-key-history-list [data-testid="stVerticalBlock"] {
+  gap: 0.15rem;
+}
+
+[data-testid="stSidebar"] [class*="st-key-conversation-row-"],
+[data-testid="stSidebar"] [class*="st-key-conversation-row-"] [data-testid="stVerticalBlock"] {
+  gap: 0;
+}
+
+[data-testid="stSidebar"] [class*="st-key-select-conversation-"] button {
+  min-height: 1.85rem;
+  justify-content: flex-start;
+  padding: 0.25rem 0.55rem;
+  border-color: transparent;
+  color: var(--muted);
+  background: transparent;
+  text-align: left;
+}
+
+[data-testid="stSidebar"] [class*="st-key-select-conversation-"] button:hover {
+  border-color: transparent;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+[data-testid="stSidebar"] [class*="st-key-select-conversation-"] button > div,
+[data-testid="stSidebar"] [class*="st-key-select-conversation-"] button [data-testid="stMarkdownContainer"] {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+[data-testid="stSidebar"] [class*="st-key-select-conversation-"] button p {
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[data-testid="stSidebar"] [class*="st-key-select-conversation-"] button[kind="primary"],
+[data-testid="stSidebar"] [class*="st-key-select-conversation-"] button[data-testid="stBaseButton-primary"] {
+  border-color: var(--accent-line) !important;
+  color: #ece8ff !important;
+  background: var(--accent-tint) !important;
+  box-shadow: none !important;
+}
+
+[data-testid="stSidebar"] [class*="st-key-select-conversation-"] button[kind="primary"]:hover,
+[data-testid="stSidebar"] [class*="st-key-select-conversation-"] button[data-testid="stBaseButton-primary"]:hover {
+  border-color: var(--accent) !important;
+  background: rgba(139, 124, 246, 0.16) !important;
+}
+
+/* ==========================================================================
+   BUTTONS, POPOVERS, INPUTS
+   ========================================================================== */
+.stButton > button,
+[data-testid^="stBaseButton-secondary"],
+[data-testid="stDownloadButton"] button {
+  min-height: var(--control);
+  padding: 0.25rem 0.7rem;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  color: var(--ink);
+  background: var(--raised);
+  box-shadow: none;
+  font-size: var(--text-sm);
+  font-weight: 550;
+  transition: border-color 0.12s, background 0.12s, color 0.12s;
+}
+
+.stButton > button:hover,
+[data-testid^="stBaseButton-secondary"]:hover,
+[data-testid="stDownloadButton"] button:hover {
+  border-color: var(--accent-line);
+  color: #fff;
+  background: var(--raised-hover);
+}
+
+.stApp button [data-testid="stMarkdownContainer"] p {
+  margin: 0 !important;
+  font-size: inherit;
+  line-height: 1.25;
+}
+
+button[kind="primary"],
+button[kind="primaryFormSubmit"],
+button[data-testid="stBaseButton-primary"],
+button[data-testid="stBaseButton-primaryFormSubmit"] {
+  border: 1px solid var(--accent-deep) !important;
+  border-radius: var(--r) !important;
+  color: #fff !important;
+  background: var(--accent-deep) !important;
+  box-shadow: none !important;
+  font-weight: 600 !important;
+}
+
+button[kind="primary"]:hover,
+button[kind="primaryFormSubmit"]:hover,
+button[data-testid="stBaseButton-primary"]:hover,
+button[data-testid="stBaseButton-primaryFormSubmit"]:hover {
+  border-color: var(--accent) !important;
+  background: var(--accent) !important;
+}
+
+button[kind="primary"] p,
+button[kind="primary"] span,
+button[data-testid="stBaseButton-primary"] p,
+button[data-testid="stBaseButton-primary"] span {
+  color: inherit !important;
+}
+
+button[kind="primary"]:disabled,
+button[data-testid="stBaseButton-primary"]:disabled {
+  opacity: 0.5 !important;
+}
+
+/* Three-dot menu trigger. Streamlit's label/chevron are hidden and the dots are
+   drawn in CSS, so they are always dead-centre whatever the font does. */
+.stApp button[aria-haspopup="dialog"],
+.stApp [data-testid="stPopoverButton"] {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 1.85rem;
+  min-width: 1.85rem;
+  height: 1.85rem;
+  min-height: 1.85rem;
+  margin: 0;
+  padding: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: var(--r) !important;
+  color: var(--faint) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.stApp button[aria-haspopup="dialog"] > *,
+.stApp [data-testid="stPopoverButton"] > * {
+  display: none !important;
+}
+
+.stApp button[aria-haspopup="dialog"]::before,
+.stApp [data-testid="stPopoverButton"]::before {
+  content: "";
+  display: block;
+  width: 3px;
+  height: 15px;
+  background: radial-gradient(circle, currentColor 1.4px, transparent 1.8px) center top / 3px 5px repeat-y;
+}
+
+.stApp button[aria-haspopup="dialog"]:hover,
+.stApp [data-testid="stPopoverButton"]:hover,
+.stApp button[aria-haspopup="dialog"][aria-expanded="true"] {
+  color: var(--ink) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+}
+
+[data-testid="stPopover"] {
+  display: flex;
+  justify-content: center;
+}
+
+/* Popover menus are rendered in a separate layer OUTSIDE .stApp, so these
+   rules deliberately have no .stApp prefix. */
+[data-testid="stPopoverBody"],
+[data-testid="stPopoverBody"] button,
+[data-testid="stPopoverBody"] p,
+[data-testid="stPopoverBody"] label {
+  font-family: var(--font);
+}
+
+[data-testid="stPopoverBody"] {
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  background: var(--raised);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
+[data-testid="stPopoverBody"] [data-testid="stVerticalBlock"] {
+  gap: 0.25rem;
+}
+
+/* --------------------------------------------------------------------------
+   Action menus (Rename / Delete / Copy answer / Edit).
+   One fixed width, one item height, and every item fills the whole row, so the
+   hover highlight always spans the full menu instead of hugging the text.
+   -------------------------------------------------------------------------- */
+:root {
+  --menu-width: 9.5rem;
+  --menu-item: 2rem;
+}
+
+/* The menu window: Streamlit nests it in two or three wrappers, so size them all. */
+:is([data-baseweb="popover"], [data-baseweb="popover"] > div, [data-testid="stPopoverBody"]):has(
+  :is(
+    [class*="st-key-start-rename-conversation-"],
+    [class*="st-key-delete-conversation-"],
+    [class*="st-key-edit-answer-"],
+    [class*="st-key-copy-answer-"]
+  )
+) {
+  width: var(--menu-width) !important;
+  min-width: var(--menu-width) !important;
+  max-width: var(--menu-width) !important;
+  border-radius: var(--r-lg) !important;
+}
+
+[data-testid="stPopoverBody"]:has(
+  :is(
+    [class*="st-key-start-rename-conversation-"],
+    [class*="st-key-delete-conversation-"],
+    [class*="st-key-edit-answer-"],
+    [class*="st-key-copy-answer-"]
+  )
+) {
+  max-height: none !important;
+  padding: 0.3rem !important;
+  overflow: hidden !important; /* a menu this small must never show a scrollbar */
+}
+
+[data-testid="stPopoverBody"]:has(
+  :is(
+    [class*="st-key-start-rename-conversation-"],
+    [class*="st-key-delete-conversation-"],
+    [class*="st-key-edit-answer-"],
+    [class*="st-key-copy-answer-"]
+  )
+) [data-testid="stVerticalBlock"] {
+  gap: 0.15rem;
+}
+
+/* Every wrapper between the menu and the button takes the full row. */
+[class*="st-key-start-rename-conversation-"],
+[class*="st-key-delete-conversation-"],
+[class*="st-key-edit-answer-"],
+[class*="st-key-start-rename-conversation-"] :is([data-testid="stButton"], .stButton),
+[class*="st-key-delete-conversation-"] :is([data-testid="stButton"], .stButton),
+[class*="st-key-edit-answer-"] :is([data-testid="stButton"], .stButton) {
+  width: 100% !important;
+  min-width: 0;
+}
+
+/* The menu item itself. */
+[class*="st-key-start-rename-conversation-"] button,
+[class*="st-key-delete-conversation-"] button,
+[class*="st-key-edit-answer-"] button {
+  display: flex;
+  width: 100% !important;
+  min-height: var(--menu-item) !important;
+  align-items: center;
+  justify-content: flex-start !important;
+  padding: 0 0.6rem !important;
+  border-color: transparent !important;
+  border-radius: var(--r) !important;
+  color: var(--ink) !important;
+  background: transparent !important;
+  text-align: left;
+}
+
+[class*="st-key-start-rename-conversation-"] button > div,
+[class*="st-key-delete-conversation-"] button > div,
+[class*="st-key-edit-answer-"] button > div,
+[class*="st-key-start-rename-conversation-"] button [data-testid="stMarkdownContainer"],
+[class*="st-key-delete-conversation-"] button [data-testid="stMarkdownContainer"],
+[class*="st-key-edit-answer-"] button [data-testid="stMarkdownContainer"] {
+  width: 100%;
+  text-align: left;
+}
+
+[class*="st-key-start-rename-conversation-"] button:hover,
+[class*="st-key-start-rename-conversation-"] button:focus-visible,
+[class*="st-key-edit-answer-"] button:hover,
+[class*="st-key-edit-answer-"] button:focus-visible {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+[class*="st-key-delete-conversation-"] button {
+  color: #f2a8b2 !important;
+}
+
+[class*="st-key-delete-conversation-"] button:hover,
+[class*="st-key-delete-conversation-"] button:focus-visible {
+  color: #ffd2d7 !important;
+  background: var(--bad-bg) !important;
+}
+
+[class*="st-key-start-rename-conversation-"] button:focus-visible,
+[class*="st-key-delete-conversation-"] button:focus-visible,
+[class*="st-key-edit-answer-"] button:focus-visible {
+  outline-offset: -2px;
+}
+
+/* "Copy answer" is an iframe (clipboard needs a real click). Iframes are inline
+   by default, and that baseline gap is what made the menu scroll. Make it a
+   block that fills the row at exactly the same height as the other items. */
+[class*="st-key-copy-answer-"],
+[class*="st-key-copy-answer-"] :is([data-testid="stElementContainer"], [data-testid="stIFrame"], .element-container) {
+  display: block;
+  width: 100% !important;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+[class*="st-key-copy-answer-"] iframe {
+  display: block;
+  width: 100% !important;
+  height: var(--menu-item) !important;
+  min-height: 0;
+  border: 0;
+  border-radius: var(--r);
+  color-scheme: dark;
+  background: transparent;
+}
+
+/* Three-dot triggers stay quiet until you reach for them. */
+[class*="st-key-conversation-row-"] button[aria-haspopup="dialog"],
+.st-key-response-canvas button[aria-haspopup="dialog"] {
+  opacity: 0.5;
+  transition: opacity 0.12s, background 0.12s, color 0.12s;
+}
+
+[class*="st-key-conversation-row-"]:hover button[aria-haspopup="dialog"],
+.st-key-response-canvas [data-testid="stHorizontalBlock"]:hover button[aria-haspopup="dialog"],
+.stApp button[aria-haspopup="dialog"]:is(:hover, :focus-visible, [aria-expanded="true"]) {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  [class*="st-key-conversation-row-"] button[aria-haspopup="dialog"],
+  .st-key-response-canvas button[aria-haspopup="dialog"] {
+    opacity: 1;
+  }
+}
+
+/* Inputs */
+div[data-baseweb="input"],
+div[data-baseweb="select"] > div {
+  min-height: 2.1rem;
+}
+
+div[data-baseweb="input"],
+div[data-baseweb="textarea"],
+div[data-baseweb="select"] > div {
+  border: 1px solid var(--line-2);
+  border-radius: var(--r);
+  color: var(--ink);
+  background: var(--surface);
+  font-size: var(--text-sm);
+}
+
+[data-baseweb="base-input"] {
+  background: transparent;
+}
+
+div[data-baseweb="input"]:focus-within,
+div[data-baseweb="textarea"]:focus-within,
+div[data-baseweb="select"] > div:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-tint);
+}
+
+[data-baseweb="menu"] {
+  background: var(--raised);
+}
+
+/* Chat composer. Streamlit nests several borders inside it; flatten them. */
+[data-testid="stBottom"],
+[data-testid="stBottom"] > div {
+  background: var(--bg) !important;
+}
+
+[data-testid="stBottomBlockContainer"] {
+  width: 100%;
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: 0.5rem var(--page-side) 1rem;
+}
+
+[data-testid="stChatInput"] {
+  border: 1px solid var(--line-2) !important;
+  border-radius: var(--r-lg) !important;
+  outline: 0 !important;
+  background: var(--surface) !important;
+  box-shadow: none !important;
+}
+
+[data-testid="stChatInput"]:focus-within {
+  border-color: var(--accent-line) !important;
+}
+
+[data-testid="stChatInput"] textarea,
+[data-testid="stChatInput"] textarea:focus,
+[data-testid="stChatInput"] textarea:focus-visible {
+  min-height: 2.4rem !important;
+  border: 0 !important;
+  outline: 0 !important;
+  color: var(--ink) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-size: var(--text) !important;
+}
+
+[data-testid="stChatInput"] div[data-baseweb="textarea"],
+[data-testid="stChatInput"] div[data-baseweb="base-input"],
+[data-testid="stChatInput"] div[data-baseweb="textarea"]:focus-within,
+[data-testid="stChatInput"] div[data-baseweb="base-input"]:focus-within {
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+[data-testid="stChatInput"] button {
+  border: 0 !important;
+  border-radius: var(--r) !important;
+  color: #fff !important;
+  background: var(--accent-deep) !important;
+}
+
+[data-testid="stChatInput"] button:disabled {
+  color: var(--faint) !important;
+  background: var(--raised-hover) !important;
+}
+
+/* ==========================================================================
+   TABS, ALERTS
+   ========================================================================== */
+[data-testid="stTabs"] [data-baseweb="tab-list"] {
+  gap: 0.1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+[data-baseweb="tab-border"] {
+  display: none;
+}
+
+[data-baseweb="tab-highlight"] {
+  height: 2px;
+  background: var(--accent) !important;
+}
+
+[data-baseweb="tab-panel"] {
+  padding-top: 0.6rem;
+}
+
+button[data-baseweb="tab"] {
+  height: auto;
+  padding: 0.4rem 0.75rem;
+  color: var(--faint) !important;
+  background: transparent !important;
+}
+
+button[data-baseweb="tab"]:hover {
+  color: var(--muted) !important;
+}
+
+button[data-baseweb="tab"] p {
+  margin: 0;
+  color: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+  color: var(--ink) !important;
+}
+
+[data-testid="stAlert"],
+[data-testid="stAlertContainer"] {
+  border-radius: var(--r);
+  font-size: var(--text-sm);
+}
+
+[data-testid="stAlertContainer"] {
+  padding: 0.5rem 0.75rem;
+}
+
+/* ==========================================================================
+   LANDING
+   ========================================================================== */
+.eyebrow,
+.section-kicker {
+  color: #b7aaff;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 1.2rem 0 0.5rem;
+}
+
+.hero-title {
+  max-width: 22ch;
+  color: #f2f4fa;
+  font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+  font-weight: 750;
+  letter-spacing: -0.035em;
+  line-height: 1.12;
+}
+
+.stApp .tagline {
+  max-width: 56ch;
+  margin: 0.5rem 0 0.9rem !important;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.welcome-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.welcome-steps span {
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  color: #c4ccda;
+  font-size: var(--text-sm);
+}
+
+.welcome-steps b {
+  margin-right: 0.4rem;
+  color: var(--accent-hover);
+  font-size: var(--text-xs);
+}
+
+/* ==========================================================================
+   WORKSPACE HEADER
+   ========================================================================== */
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+.page-title {
+  min-width: 0;
+  color: #f2f4fa;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.chip b {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+/* ==========================================================================
+   CARDS — card() drops a marker so the bordered container can be styled.
+   ========================================================================== */
+.stApp div[data-testid="stVerticalBlockBorderWrapper"]:has(.card-marker):not(
+  :has(div[data-testid="stVerticalBlockBorderWrapper"] .card-marker)
+) {
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: none;
+}
+
+.stApp div[data-testid="stVerticalBlockBorderWrapper"]:has(.card-marker):not(
+  :has(div[data-testid="stVerticalBlockBorderWrapper"] .card-marker)
+) [data-testid="stVerticalBlock"] {
+  gap: var(--gap-tight);
+}
+
+.empty-state {
+  display: flex;
+  min-height: 7rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.empty-icon {
+  display: grid;
+  width: 2.2rem;
+  height: 2.2rem;
+  place-items: center;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r);
+  color: #c7beff;
+  background: var(--accent-tint);
+  font-size: 1.1rem;
+}
+
+.empty-title {
+  margin-top: 0.5rem;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.stApp .empty-state p {
+  margin: 0.2rem 0 0 !important;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+/* ==========================================================================
+   CONVERSATION CANVAS
+   ========================================================================== */
+.st-key-response-canvas {
+  min-width: 0;
+  max-height: min(var(--canvas-max-height), max(18rem, calc(100vh - 15rem)));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.st-key-response-canvas [data-testid="stVerticalBlockBorderWrapper"],
+.st-key-response-canvas [data-testid="stVerticalBlock"] {
+  overscroll-behavior: contain;
+}
+
+.card-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.card-title {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.canvas-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+  color: var(--faint);
+  font-size: var(--text-xs);
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.canvas-welcome {
+  padding: 1.1rem 0.5rem;
+  text-align: center;
+}
+
+.canvas-welcome strong {
+  color: var(--ink);
+  font-size: 0.85rem;
+}
+
+.stApp .canvas-welcome p {
+  margin: 0.2rem 0 0 !important;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.question-card {
+  margin: 0.35rem 0 0.5rem;
+  padding: 0.45rem 0.7rem;
+  border-left: 2px solid var(--accent);
+  border-radius: 0 var(--r) var(--r) 0;
+  background: var(--accent-tint);
+}
+
+.question-card span {
+  color: var(--accent-hover);
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.stApp .question-card p {
+  margin: 0.1rem 0 0 !important;
+  color: var(--ink);
+  font-size: 0.84rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.turn-separator {
+  height: 1px;
+  margin: 0.55rem 0;
+  background: var(--line);
+}
+
+/* Progress panel */
+.analysis-state {
+  margin: 0.4rem 0 0;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--raised);
+}
+
+.analysis-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.analysis-heading strong {
+  min-width: 0;
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.analysis-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.state-running .analysis-dot {
+  animation: pulse 1.35s ease-in-out infinite;
+}
+
+.state-idle .analysis-dot {
+  background: var(--faint);
+}
+
+.state-done .analysis-dot,
+.state-done .analysis-track i {
+  background: var(--good);
+}
+
+.state-failed {
+  border-color: var(--bad-line);
+  background: var(--bad-bg);
+}
+
+.state-failed .analysis-dot,
+.state-failed .analysis-track i {
+  background: var(--bad);
+}
+
+.analysis-percent {
+  margin-left: auto;
+  color: var(--faint);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.stApp .analysis-state > p {
+  margin: 0.2rem 0 0 0.85rem !important;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.analysis-track {
+  height: 2px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--line-2);
+}
+
+.analysis-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+
+.st-key-response-canvas [data-testid="stMarkdownContainer"] {
+  color: #dce2eb;
+  font-size: 0.85rem;
+}
+
+[class*="st-key-answer-editor-"] textarea {
+  min-height: 9rem;
+}
+
+/* ==========================================================================
+   DATA
+   ========================================================================== */
+.stDataFrame,
+[data-testid="stDataFrame"] {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+
+/* ==========================================================================
+   MOTION AND SMALL SCREENS
+   ========================================================================== */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@media (max-width: 800px) {
+  :root {
+    --page-top: 0.6rem;
+    --page-side: 0.75rem;
+    --page-bottom: 4.5rem;
+  }
+
+  .welcome-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-title {
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
