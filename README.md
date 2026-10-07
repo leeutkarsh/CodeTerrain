@@ -72,6 +72,8 @@ Find **every place** a specific symbol or function is referenced across the enti
 ### 🔌 Ollama API Integration
 Fully configurable through **environment variables**. Use a **local Ollama instance** for maximum privacy, or connect to a **remote Ollama host** with an API key for more power and flexibility.
 
+*visit **[OLLAMA](ollama.com/settings/keys)** and create a free api key and paste it in .env file*
+
 </td>
 <td valign="top">
 
