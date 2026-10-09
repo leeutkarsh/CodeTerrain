@@ -1,19 +1,13 @@
-/* ==========================================================================
-   CodeTerrain — compact, minimal, flat dark theme.
-   Everything tunable lives in :root. No external fonts or network requests,
-   so nothing flashes or shifts while the page loads.
-   ========================================================================== */
 :root {
-  /* Layout */
+
   --page-width: 1080px;
   --page-top: 0.9rem;
   --page-side: 1.25rem;
   --page-bottom: 5rem;
-  --canvas-max-height: 520px; /* UI.py overrides this from RESPONSE_CANVAS_MAX_HEIGHT */
+  --canvas-max-height: 520px;
   --gap: 0.6rem;
   --gap-tight: 0.4rem;
 
-  /* Shape and type */
   --r-sm: 6px;
   --r: 8px;
   --r-lg: 12px;
@@ -24,7 +18,6 @@
   --text-sm: 0.78rem;
   --text-xs: 0.68rem;
 
-  /* Colour */
   color-scheme: dark;
   --bg: #0b0d12;
   --surface: #10131a;
@@ -46,9 +39,6 @@
   --bad-line: rgba(239, 123, 136, 0.28);
 }
 
-/* ==========================================================================
-   BASE
-   ========================================================================== */
 *,
 *::before,
 *::after {
@@ -97,8 +87,6 @@ a {
   outline-offset: 1px;
 }
 
-/* Streamlit chrome we do not need: deploy button, rainbow bar, heading anchors,
-   and the container that only holds this <style> block (it would add a gap). */
 [data-testid="stDecoration"],
 [data-testid="stMainMenu"],
 #MainMenu,
@@ -108,9 +96,9 @@ a {
   display: none !important;
 }
 
-.stApp [data-testid="stElementContainer"]:has(style),
+.stApp [data-testid="stElementContainer"]:has([data-testid="stMarkdownContainer"] style),
 .stApp [data-testid="stElementContainer"]:has(.card-marker),
-.stApp .element-container:has(style),
+.stApp .element-container:has([data-testid="stMarkdownContainer"] style),
 .stApp .element-container:has(.card-marker) {
   display: none;
 }
@@ -134,9 +122,6 @@ a {
   gap: var(--gap-tight);
 }
 
-/* ==========================================================================
-   TYPE
-   ========================================================================== */
 .stApp [data-testid="stMarkdownContainer"] {
   margin-bottom: 0 !important;
   font-size: var(--text);
@@ -256,9 +241,6 @@ a {
   line-height: 1.4;
 }
 
-/* ==========================================================================
-   SIDEBAR
-   ========================================================================== */
 [data-testid="stSidebar"] {
   border-right: 1px solid var(--line);
   background: var(--surface);
@@ -350,7 +332,6 @@ a {
   white-space: nowrap;
 }
 
-/* Status dots share one look. */
 .eyebrow span,
 .project-pulse,
 .canvas-status i {
@@ -362,7 +343,6 @@ a {
   background: var(--good);
 }
 
-/* History list: tight rows, selected chat highlighted, titles ellipsised. */
 .st-key-history-list,
 [data-testid="stSidebar"] .st-key-history-list [data-testid="stVerticalBlock"] {
   gap: 0.15rem;
@@ -417,9 +397,6 @@ a {
   background: rgba(139, 124, 246, 0.16) !important;
 }
 
-/* ==========================================================================
-   BUTTONS, POPOVERS, INPUTS
-   ========================================================================== */
 .stButton > button,
 [data-testid^="stBaseButton-secondary"],
 [data-testid="stDownloadButton"] button {
@@ -481,8 +458,6 @@ button[data-testid="stBaseButton-primary"]:disabled {
   opacity: 0.5 !important;
 }
 
-/* Three-dot menu trigger. Streamlit's label/chevron are hidden and the dots are
-   drawn in CSS, so they are always dead-centre whatever the font does. */
 .stApp button[aria-haspopup="dialog"],
 .stApp [data-testid="stPopoverButton"] {
   display: inline-flex !important;
@@ -528,8 +503,6 @@ button[data-testid="stBaseButton-primary"]:disabled {
   justify-content: center;
 }
 
-/* Popover menus are rendered in a separate layer OUTSIDE .stApp, so these
-   rules deliberately have no .stApp prefix. */
 [data-testid="stPopoverBody"],
 [data-testid="stPopoverBody"] button,
 [data-testid="stPopoverBody"] p,
@@ -548,17 +521,11 @@ button[data-testid="stBaseButton-primary"]:disabled {
   gap: 0.25rem;
 }
 
-/* --------------------------------------------------------------------------
-   Action menus (Rename / Delete / Copy answer / Edit).
-   One fixed width, one item height, and every item fills the whole row, so the
-   hover highlight always spans the full menu instead of hugging the text.
-   -------------------------------------------------------------------------- */
 :root {
   --menu-width: 9.5rem;
   --menu-item: 2rem;
 }
 
-/* The menu window: Streamlit nests it in two or three wrappers, so size them all. */
 :is([data-baseweb="popover"], [data-baseweb="popover"] > div, [data-testid="stPopoverBody"]):has(
   :is(
     [class*="st-key-start-rename-conversation-"],
@@ -583,7 +550,7 @@ button[data-testid="stBaseButton-primary"]:disabled {
 ) {
   max-height: none !important;
   padding: 0.3rem !important;
-  overflow: hidden !important; /* a menu this small must never show a scrollbar */
+  overflow: hidden !important;
 }
 
 [data-testid="stPopoverBody"]:has(
@@ -597,7 +564,6 @@ button[data-testid="stBaseButton-primary"]:disabled {
   gap: 0.15rem;
 }
 
-/* Every wrapper between the menu and the button takes the full row. */
 [class*="st-key-start-rename-conversation-"],
 [class*="st-key-delete-conversation-"],
 [class*="st-key-edit-answer-"],
@@ -608,7 +574,6 @@ button[data-testid="stBaseButton-primary"]:disabled {
   min-width: 0;
 }
 
-/* The menu item itself. */
 [class*="st-key-start-rename-conversation-"] button,
 [class*="st-key-delete-conversation-"] button,
 [class*="st-key-edit-answer-"] button {
@@ -659,9 +624,6 @@ button[data-testid="stBaseButton-primary"]:disabled {
   outline-offset: -2px;
 }
 
-/* "Copy answer" is an iframe (clipboard needs a real click). Iframes are inline
-   by default, and that baseline gap is what made the menu scroll. Make it a
-   block that fills the row at exactly the same height as the other items. */
 [class*="st-key-copy-answer-"],
 [class*="st-key-copy-answer-"] :is([data-testid="stElementContainer"], [data-testid="stIFrame"], .element-container) {
   display: block;
@@ -683,7 +645,6 @@ button[data-testid="stBaseButton-primary"]:disabled {
   background: transparent;
 }
 
-/* Three-dot triggers stay quiet until you reach for them. */
 [class*="st-key-conversation-row-"] button[aria-haspopup="dialog"],
 .st-key-response-canvas button[aria-haspopup="dialog"] {
   opacity: 0.5;
@@ -703,7 +664,6 @@ button[data-testid="stBaseButton-primary"]:disabled {
   }
 }
 
-/* Inputs */
 div[data-baseweb="input"],
 div[data-baseweb="select"] > div {
   min-height: 2.1rem;
@@ -734,7 +694,6 @@ div[data-baseweb="select"] > div:focus-within {
   background: var(--raised);
 }
 
-/* Chat composer. Streamlit nests several borders inside it; flatten them. */
 [data-testid="stBottom"],
 [data-testid="stBottom"] > div {
   background: var(--bg) !important;
@@ -793,9 +752,6 @@ div[data-baseweb="select"] > div:focus-within {
   background: var(--raised-hover) !important;
 }
 
-/* ==========================================================================
-   TABS, ALERTS
-   ========================================================================== */
 [data-testid="stTabs"] [data-baseweb="tab-list"] {
   gap: 0.1rem;
   border-bottom: 1px solid var(--line);
@@ -846,9 +802,6 @@ button[data-baseweb="tab"][aria-selected="true"] {
   padding: 0.5rem 0.75rem;
 }
 
-/* ==========================================================================
-   LANDING
-   ========================================================================== */
 .eyebrow,
 .section-kicker {
   color: #b7aaff;
@@ -902,9 +855,6 @@ button[data-baseweb="tab"][aria-selected="true"] {
   font-size: var(--text-xs);
 }
 
-/* ==========================================================================
-   WORKSPACE HEADER
-   ========================================================================== */
 .page-head {
   display: flex;
   align-items: center;
@@ -946,9 +896,6 @@ button[data-baseweb="tab"][aria-selected="true"] {
   font-weight: 650;
 }
 
-/* ==========================================================================
-   CARDS — card() drops a marker so the bordered container can be styled.
-   ========================================================================== */
 .stApp div[data-testid="stVerticalBlockBorderWrapper"]:has(.card-marker):not(
   :has(div[data-testid="stVerticalBlockBorderWrapper"] .card-marker)
 ) {
@@ -1000,9 +947,6 @@ button[data-baseweb="tab"][aria-selected="true"] {
   font-size: var(--text-sm);
 }
 
-/* ==========================================================================
-   CONVERSATION CANVAS
-   ========================================================================== */
 .st-key-response-canvas {
   min-width: 0;
   max-height: min(var(--canvas-max-height), max(18rem, calc(100vh - 15rem)));
@@ -1092,7 +1036,6 @@ button[data-baseweb="tab"][aria-selected="true"] {
   background: var(--line);
 }
 
-/* Progress panel */
 .analysis-state {
   margin: 0.4rem 0 0;
   padding: 0.55rem 0.7rem;
@@ -1186,9 +1129,6 @@ button[data-baseweb="tab"][aria-selected="true"] {
   min-height: 9rem;
 }
 
-/* ==========================================================================
-   DATA
-   ========================================================================== */
 .stDataFrame,
 [data-testid="stDataFrame"] {
   overflow: hidden;
@@ -1196,9 +1136,6 @@ button[data-baseweb="tab"][aria-selected="true"] {
   border-radius: var(--r);
 }
 
-/* ==========================================================================
-   MOTION AND SMALL SCREENS
-   ========================================================================== */
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
