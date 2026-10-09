@@ -16,27 +16,17 @@ import streamlit as st
 
 from agent import ask_agent
 from status import Status
+from visuals import context_text, render_rich_markdown
 
 
-# ---------------------------------------------------------------------------
-# UI SETTINGS
-# ---------------------------------------------------------------------------
-# Logo location: replace this with your own image path. Relative paths are
-# resolved from the folder containing UI.py. Supported formats: PNG, JPG, WebP.
 LOGO_PATH: Path | None = Path(__file__).resolve().parent / "logo.png"
 LOGO_MAX_BYTES = 4 * 1024 * 1024
-# Upper height of the conversation canvas. It is pushed into style.css as
-# --canvas-max-height, so there is nothing to keep in sync by hand.
 RESPONSE_CANVAS_MAX_HEIGHT = 520
 MAX_FILE_ROWS = 3000
 NEW_CONVERSATION_ID = "__new_conversation__"
 CONTEXT_MESSAGE_LIMIT = 8
 CONTEXT_MESSAGE_CHARS = 3000
 
-# The script re-executes top to bottom on every run, so this counter restarts at
-# 1 each run. The conversation is drawn more than once in a single run (before
-# the question, while waiting, ...) and every element key needs to stay unique
-# across those passes, otherwise Streamlit raises a duplicate-key error.
 _RENDER_PASSES = itertools.count(1)
 
 IGNORED_DIRECTORIES = {
@@ -71,8 +61,6 @@ def _streamlit_version() -> tuple[int, int]:
         return (0, 0)
 
 
-# Newer Streamlit replaced use_container_width with width="stretch"; pick the
-# one this install understands so there are no deprecation warnings or errors.
 STRETCH: dict[str, object] = (
     {"width": "stretch"}
     if _streamlit_version() >= (1, 50)
@@ -89,7 +77,6 @@ st.set_page_config(
 
 
 def load_css(name: str = "style.css") -> None:
-    """Load all app styling from the stylesheet beside this file."""
     try:
         css = (Path(__file__).resolve().parent / name).read_text(encoding="utf-8")
     except OSError:
@@ -101,7 +88,6 @@ def load_css(name: str = "style.css") -> None:
 
 @contextmanager
 def card(key: str | None = None):
-    """A bordered card styled through the marker in style.css."""
     options: dict[str, object] = {"border": True}
     if key:
         options["key"] = key
@@ -137,7 +123,6 @@ def initialize_state() -> None:
     if pending_history_picker:
         st.session_state.history_picker = pending_history_picker
 
-    # Migrate chat history kept by the earlier UI instead of dropping it.
     legacy_messages = st.session_state.pop("messages", None)
     latest_question = st.session_state.pop("latest_question", "")
     latest_answer = st.session_state.pop("latest_answer", "")
@@ -164,7 +149,6 @@ def initialize_state() -> None:
             st.session_state.conversations = [conversation]
             st.session_state.history_picker = conversation["id"]
 
-    # Clean up keys left by older UI versions and the removed logo uploader.
     st.session_state.pop("project_name", None)
     st.session_state.pop("brand_logo", None)
 
@@ -313,6 +297,8 @@ def agent_question_with_context(messages: list[dict], question: str) -> str:
     for message in previous_messages:
         role = "User" if message.get("role") == "user" else "Assistant"
         content = str(message.get("content", "")).strip()
+        if message.get("role") != "user":
+            content = context_text(content)
         if len(content) > CONTEXT_MESSAGE_CHARS:
             content = content[:CONTEXT_MESSAGE_CHARS].rstrip() + "… [truncated]"
         context.append(f"{role}: {content}")
@@ -331,7 +317,6 @@ initialize_state()
 
 
 def select_folder() -> str:
-    """Open a native folder picker for the local Streamlit app."""
     root = tk.Tk()
     try:
         root.withdraw()
@@ -360,11 +345,6 @@ def select_folder() -> str:
 
 
 def scan_project(folder: str) -> tuple[list[Path], int]:
-    """Index files without following links or descending into build/cache trees.
-
-    Unreadable directories are skipped and counted instead of aborting the
-    entire project selection.
-    """
     root = Path(folder).expanduser().resolve()
     files: list[Path] = []
     scan_errors = 0
@@ -403,7 +383,6 @@ def scan_project(folder: str) -> tuple[list[Path], int]:
 
 
 def markdown_files(files: list[Path]) -> list[Path]:
-    """Reuse the project index and include case variants such as README.MD."""
     return sorted(
         (path for path in files if path.suffix.casefold() == ".md"),
         key=lambda item: str(item).casefold(),
@@ -450,7 +429,6 @@ def choose_project() -> None:
 
 
 def refresh_project() -> None:
-    """Refresh the cached file list after files are added or removed."""
     project_root = st.session_state.project_root
     if not project_root or not Path(project_root).is_dir():
         st.error("The selected project folder is no longer available.")
@@ -623,18 +601,11 @@ def render_sidebar_history(project_root: str) -> None:
 
 
 def render_answer_copy_button(answer: str) -> None:
-    """A 'Copy answer' menu item drawn to match the native Rename / Delete items.
-
-    Clipboard access needs a real browser click, so this stays a tiny iframe.
-    It is sized by CSS (see .st-key-copy-answer-* in style.css) to fill the menu
-    exactly: no fixed width, no inline-baseline gap, nothing to scroll.
-    """
     encoded_answer = base64.b64encode(answer.encode("utf-8")).decode("ascii")
     st.components.v1.html(
         f"""
         <meta name="color-scheme" content="dark">
         <style>
-          /* Same colour as the popover (--raised) so the iframe never shows as a box. */
           html, body {{ height:100%; margin:0; overflow:hidden; background:#151922; }}
           button {{
             display:block; width:100%; height:100%; padding:0 .6rem; border:0;
@@ -762,7 +733,13 @@ def render_conversation_messages(slot, conversation: dict | None) -> None:
                             vertical_alignment="top",
                         )
                         with answer_col:
-                            st.markdown(answer)
+                            render_rich_markdown(
+                                answer,
+                                key_prefix=(
+                                    f"answer-{conversation_id}-"
+                                    f"{message_index}-r{render_pass}"
+                                ),
+                            )
                         with action_col:
                             with st.popover("⋮"):
                                 with st.container(
@@ -1032,7 +1009,6 @@ with chat_tab:
             conversation["updated_at"] = time.time()
             st.session_state.conversations = list(st.session_state.conversations)
 
-        # No extra render here: st.rerun() below redraws everything once.
         if is_new_conversation:
             st.session_state.pending_history_picker = conversation["id"]
         st.rerun()
@@ -1076,7 +1052,11 @@ with docs_tab:
                         "Preview limited to the first 1 MB to keep the page responsive."
                     )
                 if content.strip():
-                    st.markdown(content)
+                    render_rich_markdown(
+                        content,
+                        key_prefix=f"doc-{relative_docs.index(selected_doc)}",
+                        allow_visuals=False,
+                    )
                 else:
                     st.caption("This Markdown file is empty.")
         except Exception as error:
