@@ -997,7 +997,6 @@ def is_callable(definition: dict) -> bool:
 
 
 def collect_definitions(items, parent: str | None = None) -> list[dict]:
-    """Flatten tree-sitter's nested structure into one list of plain dicts."""
     found = []
 
     for item in items:
@@ -1030,7 +1029,6 @@ def read_source(file: Path) -> str | None:
 
 
 def parse_source(file: Path, with_imports: bool = False, must_contain: str | None = None) -> dict | None:
-    """Parse one file. Returns None when it can't or shouldn't be parsed."""
     language = detect_language_from_path(str(file))
     source = read_source(file)
 
@@ -1064,7 +1062,6 @@ def parse_source(file: Path, with_imports: bool = False, must_contain: str | Non
 
 
 def blank_noise(source: str, suffix: str) -> str:
-    """Replace strings/comments with spaces. Newlines stay, so line numbers don't shift."""
     pattern = HASH_NOISE_RE if suffix.lower() in HASH_COMMENT_SUFFIXES else SLASH_NOISE_RE
     return pattern.sub(lambda m: re.sub(r"[^\n]", " ", m.group()), source)
 
@@ -1082,7 +1079,6 @@ def calls_in_span(
     own_name: str = "",
     skip: list[tuple[int, int]] | tuple = (),
 ) -> list[dict]:
-    """Find call-looking names (`name(`) inside a line range of already-cleaned source."""
     lines = list(clean_lines[start_line - 1:end_line])
 
     for skip_start, skip_end in skip:
@@ -1153,7 +1149,6 @@ def describe_parameter(raw: str, language: str | None) -> dict | None:
 
 
 def split_parameters(signature: str | None, language: str | None) -> list[dict]:
-    """Split the first (...) of a signature on top-level commas."""
     text = signature or ""
     start = text.find("(")
     if start != -1 and language == "go" and re.match(r"\s*func\s*\(", text):
@@ -1265,7 +1260,6 @@ def get_function_info(
 
 
 def enclosing_function(definitions: list[dict], line: int) -> str | None:
-    """Name of the smallest function/method whose line range contains `line`."""
     best = None
     for d in definitions:
         if is_callable(d) and d["start_line"] <= line <= d["end_line"]:
@@ -1353,11 +1347,6 @@ def find_references(
 
 
 def import_bindings(file: Path, imports: list, by_file: dict) -> tuple[dict, set]:
-    """What names does this file bring in?
-
-    internal: local name -> (project file, original name or None for a whole module)
-    external: local names that come from outside the project (os, numpy, ...)
-    """
     internal: dict[str, tuple[str, str | None]] = {}
     external: set[str] = set()
 
@@ -1397,14 +1386,6 @@ def import_bindings(file: Path, imports: list, by_file: dict) -> tuple[dict, set
 
 
 def resolve_call(call: str, caller: dict, tables: dict) -> tuple[str, list[str]]:
-    """Decide which project function a call refers to.
-
-    Returns (status, node_ids) where status is one of:
-      "resolved"  - found through scope or imports (high confidence)
-      "guessed"   - only one function in the project has that name (low confidence)
-      "ambiguous" - several candidates, we refuse to pick
-      "external"  - not in the project (stdlib, third-party, builtins)
-    """
     nodes, by_file = tables["nodes"], tables["by_file"]
     file = caller["file"]
     parts = call.split(".")
@@ -1484,7 +1465,6 @@ def resolve_call(call: str, caller: dict, tables: dict) -> tuple[str, list[str]]
 
 
 def walk_call_graph(starts: list[str], adjacency: dict, direction: str, max_depth: int) -> tuple[list, dict]:
-    """Breadth-first walk. Returns (edges walked, {node_id: depth})."""
     depth_of = {node_id: 0 for node_id in starts}
     walked, frontier = [], list(starts)
 
