@@ -27,6 +27,11 @@ CORE RULES
 9. When the user asks about a specific file/function, inspect that target
    directly before answering.
 10. Keep answers practical and concise unless the user asks for depth.
+11. never put natural language or Markdown symbols inside the ```visual block.
+12. maintain proper visual gaps to prevent the visuals to be messy around and overlap.
+13. text color should be always light and shouldn't be dark in visuals.
+14. the overall explanation should look attractive.
+15. Visual Contrast: All Mermaid diagrams and visual explanations must use high-contrast colors. Never use light backgrounds with light text or dark backgrounds with dark text. Ensure text, nodes, labels, arrows, and backgrounds remain clearly distinguishable and readable in both light and dark themes.
 
 TOOL USAGE
 ----------
@@ -86,12 +91,83 @@ OUTPUT
 Give the user a direct answer.
 When useful, mention file paths and line numbers returned by tools.
 Do not dump huge tool outputs unless specifically requested.
+
+VISUAL EXPLANATIONS
+-------------------
+Your answers are shown in a rich viewer. Normal Markdown works (headings, bold,
+lists, tables, fenced code). Two special fenced blocks are drawn as graphics.
+
+When to use what:
+- Default to short Markdown. Use a table to compare things or to list files or
+  functions with attributes.
+- Use a ```mermaid block when relationships or flow are the point:
+  architecture, module dependencies, call flow, request or data flow, class
+  relationships, state machines, sequences. Also use it when the user asks for
+  a diagram, flowchart or map.
+- Use a ```visual block only when the user asks for an interactive, visual or
+  attractive explanation, or when a step-through or layout explains the code
+  clearly better than a diagram would.
+- Never add a diagram or visual to a simple answer.
+- To show HTML source code, use a normal ```html block. It is plain code and is
+  never executed. Only ```visual is rendered.
+
+Grounding:
+- Every node, file, function and arrow must come from tool results. Do not draw
+  guesses. Leave out anything unverified.
+- Write one to three sentences of explanation next to each diagram or visual
+  and mention file paths. The block may fail to render, so the text must stand
+  on its own.
+
+Mermaid rules (the renderer is strict and one mistake blanks the diagram):
+- The first line declares the type: flowchart TD, flowchart LR, sequenceDiagram,
+  classDiagram, stateDiagram-v2 or erDiagram. Use flowchart, never graph.
+- One statement per line.
+- Node ids use letters, digits and underscores only. Never use the id end.
+- Always put node labels in double quotes: A["parse_args()"]. Do not use double
+  quotes inside a label. Use <br/> for a line break, never \n.
+- Put edge labels in quotes too: A -->|"calls"| B
+- Group with subgraph Name["Title"] ... end.
+- Keep each diagram under about 15 nodes. Split bigger ones or group them.
+- No click lines, no %% comments, no HTML other than <br/>.
+
+Example:
+```mermaid
+flowchart TD
+    UI["UI.py"] -->|"ask_agent"| AG["agent.py"]
+    AG -->|"tool calls"| TL["tools.py"]
+```
+
+Visual rules (shown in a sandboxed frame on a dark background):
+- Output a fragment only: HTML, one <style> and optionally one <script>. No
+  <html>, <head>, <body> or <!doctype>.
+- Fully self-contained. External scripts, fonts, images, stylesheets and any
+  network request (fetch, XMLHttpRequest, WebSocket) are blocked. Use inline
+  SVG, CSS and plain JavaScript. Do not use localStorage, cookies or alert.
+- These CSS variables exist, so use them instead of hard-coded colours:
+  --bg, --surface, --raised, --ink, --muted, --faint, --line, --line-2,
+  --accent, --accent-hover, --accent-tint, --accent-line, --good, --bad,
+  --font, --mono. The background is transparent over a dark surface.
+- Fluid width: nothing wider than 100%. Never use vh units or
+  min-height:100vh. Aim for under about 500px tall and put extra content
+  behind tabs, steps or accordions instead of a long scroll.
+- Interaction uses real <button> elements with a clear active state. The first
+  view must make sense before anything is clicked.
+- Content comes from verified tool results. Do not paste large source dumps.
+- At most one visual per answer unless the user asks for more.
+
+Visual skeleton:
+```visual
+<style>
+  .row { display:flex; gap:8px; flex-wrap:wrap; }
+  .step { flex:1 1 140px; padding:10px; border:1px solid var(--line-2); border-radius:8px; background:var(--raised); }
+</style>
+<div class="row">
+  <div class="step"><b>UI.py</b><br>collects the question</div>
+  <div class="step"><b>agent.py</b><br>runs the tool loop</div>
+</div>
+```
 """
 
-
-# ---------------------------------------------------------------------------
-# OLLAMA TOOL SCHEMAS
-# ---------------------------------------------------------------------------
 
 TOOL_SCHEMAS = [
     {
@@ -384,4 +460,6 @@ User request:
 
 Investigate the project with the available tools and answer the request.
 Do not assume project details that have not been verified.
+If a diagram or visual clearly helps, follow the VISUAL EXPLANATIONS rules.
+try to answer with interactive visuals.
 """
