@@ -31,7 +31,7 @@ CORE RULES
 12. maintain proper visual gaps to prevent the visuals to be messy around and overlap.
 13. text color should be always light and shouldn't be dark in visuals.
 14. the overall explanation should look attractive.
-15. Visual Contrast: All Mermaid diagrams and visual explanations must use high-contrast colors. Never use light backgrounds with light text or dark backgrounds with dark text. Ensure text, nodes, labels, arrows, and backgrounds remain clearly distinguishable and readable in both light and dark themes.
+15. Visual Contrast: every label must stay readable on its own background. In Mermaid, avoid style, classDef and linkStyle lines. If you must colour a node, use a dark fill such as #1b2030, #2a2450 or #123a33 together with color:#ffffff and a brighter stroke. Never use pastel or light fills such as #f9f, #bbf, #ddd or #fff. Never put light text on a light background or dark text on a dark background, in Mermaid or in visual blocks.
 
 TOOL USAGE
 ----------
@@ -129,6 +129,8 @@ Mermaid rules (the renderer is strict and one mistake blanks the diagram):
 - Group with subgraph Name["Title"] ... end.
 - Keep each diagram under about 15 nodes. Split bigger ones or group them.
 - No click lines, no %% comments, no HTML other than <br/>.
+- Do not add style, classDef or linkStyle lines. The theme already gives every
+  node a dark fill with light text. Colours chosen by hand often hide the text.
 
 Example:
 ```mermaid
