@@ -129,7 +129,7 @@ COMPONENT_CSS = r"""
 }
 
 .ct-label {
-  color: var(--muted, #9099a8);
+  color: var(--muted, #a8b1c0);
   font-size: 12px;
   font-weight: 600;
 }
@@ -143,7 +143,7 @@ COMPONENT_CSS = r"""
   padding: 0.22rem 0.6rem;
   border: 1px solid transparent;
   border-radius: 6px;
-  color: var(--muted, #9099a8);
+  color: var(--muted, #a8b1c0);
   background: transparent;
   font-family: inherit;
   font-size: 12px;
@@ -187,7 +187,7 @@ COMPONENT_CSS = r"""
 
 .ct-loading {
   padding: 0.4rem 0;
-  color: var(--faint, #667085);
+  color: var(--faint, #8a94a6);
   font-size: 12px;
 }
 
@@ -328,8 +328,8 @@ const FRAME_BASE_CSS = `
 :root {
   color-scheme: dark;
   --bg: #0b0d12; --surface: #10131a; --raised: #151922; --raised-hover: #1b2030;
-  --ink: #e6e9ef; --muted: #9099a8; --faint: #667085; --line: #1e232d; --line-2: #2a303c;
-  --accent: #8b7cf6; --accent-hover: #a095ff; --accent-deep: #7565e6;
+  --ink: #e6e9ef; --muted: #a8b1c0; --faint: #8a94a6; --line: #1e232d; --line-2: #2a303c;
+  --accent: #8b7cf6; --accent-hover: #a095ff; --accent-deep: #6252d8;
   --accent-tint: rgba(139, 124, 246, 0.1); --accent-line: rgba(139, 124, 246, 0.32);
   --good: #4cc9a4; --bad: #ef7b88;
   --font: ${FONT_STACK};
@@ -427,6 +427,256 @@ function showFailure(block, message) {
   block.querySelector(".ct-expand").hidden = true;
 }
 
+function colorKit() {
+  var DARK = { r: 5, g: 7, b: 10, a: 1 };
+  var LIGHT = { r: 255, g: 255, b: 255, a: 1 };
+  var MIN = 4.5;
+
+  function parse(value) {
+    if (!value) return null;
+    var open = value.indexOf("(");
+    var close = value.lastIndexOf(")");
+    if (open < 0 || close < 0) return null;
+    var name = value.slice(0, open).trim().toLowerCase();
+    if (name !== "rgb" && name !== "rgba") return null;
+    var parts = value.slice(open + 1, close).split(/[\s,\/]+/).filter(Boolean);
+    if (parts.length < 3) return null;
+    var r = parseFloat(parts[0]);
+    var g = parseFloat(parts[1]);
+    var b = parseFloat(parts[2]);
+    var a = 1;
+    if (parts.length > 3) {
+      a = parseFloat(parts[3]);
+      if (parts[3].indexOf("%") > -1) a = a / 100;
+    }
+    if (isNaN(r) || isNaN(g) || isNaN(b) || isNaN(a)) return null;
+    return { r: r, g: g, b: b, a: Math.max(0, Math.min(1, a)) };
+  }
+
+  function over(top, base) {
+    var a = top.a + base.a * (1 - top.a);
+    if (a <= 0) return { r: 0, g: 0, b: 0, a: 0 };
+    return {
+      r: (top.r * top.a + base.r * base.a * (1 - top.a)) / a,
+      g: (top.g * top.a + base.g * base.a * (1 - top.a)) / a,
+      b: (top.b * top.a + base.b * base.a * (1 - top.a)) / a,
+      a: a
+    };
+  }
+
+  function channel(value) {
+    var v = value / 255;
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  }
+
+  function luminance(c) {
+    return 0.2126 * channel(c.r) + 0.7152 * channel(c.g) + 0.0722 * channel(c.b);
+  }
+
+  function ratio(a, b) {
+    var x = luminance(a);
+    var y = luminance(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+
+  function pick(background) {
+    return ratio(DARK, background) >= ratio(LIGHT, background) ? "#05070a" : "#ffffff";
+  }
+
+  return { MIN: MIN, parse: parse, over: over, ratio: ratio, pick: pick };
+}
+
+function frameGuard() {
+  var kit = colorKit();
+  var BASE = { r: 16, g: 19, b: 26, a: 1 };
+  var XHTML = "http://www.w3.org/1999/xhtml";
+  var touched = [];
+  var timer = 0;
+
+  function hasOwnText(el) {
+    for (var node = el.firstChild; node; node = node.nextSibling) {
+      if (node.nodeType === 3 && node.nodeValue.trim()) return true;
+    }
+    return false;
+  }
+
+  function backdropFor(el) {
+    var chain = [];
+    for (var node = el; node && node.nodeType === 1; node = node.parentElement) {
+      chain.push(node);
+    }
+    var color = BASE;
+    for (var i = chain.length - 1; i >= 0; i -= 1) {
+      var style = getComputedStyle(chain[i]);
+      if (style.backgroundImage && style.backgroundImage !== "none") return null;
+      var bg = kit.parse(style.backgroundColor);
+      if (bg && bg.a > 0) color = kit.over(bg, color);
+    }
+    return color;
+  }
+
+  function restore() {
+    for (var i = 0; i < touched.length; i += 1) {
+      var item = touched[i];
+      if (item.value) {
+        item.el.style.setProperty("color", item.value, item.priority);
+      } else {
+        item.el.style.removeProperty("color");
+      }
+    }
+    touched = [];
+  }
+
+  function run() {
+    observer.disconnect();
+    restore();
+    var fixes = [];
+    var all = document.body ? document.body.querySelectorAll("*") : [];
+    for (var i = 0; i < all.length; i += 1) {
+      var el = all[i];
+      if (el.namespaceURI !== XHTML) continue;
+      var tag = el.tagName;
+      if (tag === "SCRIPT" || tag === "STYLE" || tag === "OPTION") continue;
+      if (!hasOwnText(el)) continue;
+      var style = getComputedStyle(el);
+      if (style.display === "none" || style.visibility === "hidden") continue;
+      if (style.backgroundClip === "text" || style.webkitBackgroundClip === "text") continue;
+      var fg = kit.parse(style.color);
+      var bg = backdropFor(el);
+      if (!fg || !bg) continue;
+      if (kit.ratio(kit.over(fg, bg), bg) >= kit.MIN) continue;
+      fixes.push({ el: el, color: kit.pick(bg) });
+    }
+    for (var j = 0; j < fixes.length; j += 1) {
+      var fix = fixes[j];
+      touched.push({
+        el: fix.el,
+        value: fix.el.style.getPropertyValue("color"),
+        priority: fix.el.style.getPropertyPriority("color")
+      });
+      fix.el.style.setProperty("color", fix.color, "important");
+    }
+    connect();
+  }
+
+  function schedule() {
+    if (timer) return;
+    timer = setTimeout(function () {
+      timer = 0;
+      run();
+    }, 80);
+  }
+
+  var observer = new MutationObserver(schedule);
+
+  function connect() {
+    if (!document.body) return;
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: [
+        "class", "style", "hidden", "open", "aria-selected", "aria-pressed",
+        "aria-expanded", "aria-current", "data-active", "data-state", "data-tab", "data-step"
+      ]
+    });
+  }
+
+  ["click", "input", "change", "mouseover", "mouseout", "focusin", "focusout", "transitionend", "animationend", "keyup"].forEach(function (name) {
+    document.addEventListener(name, schedule, true);
+  });
+  window.addEventListener("load", schedule);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+  run();
+}
+
+const FRAME_GUARD = colorKit.toString() + "\n(" + frameGuard.toString() + ")();";
+
+const DIAGRAM_BASE = { r: 16, g: 19, b: 26, a: 1 };
+const diagramKit = colorKit();
+
+function firstTextHost(label) {
+  const walker = document.createTreeWalker(label, NodeFilter.SHOW_TEXT);
+  let node = walker.nextNode();
+  while (node) {
+    if (node.nodeValue.trim()) return node.parentElement;
+    node = walker.nextNode();
+  }
+  return null;
+}
+
+function paintLabel(label, color) {
+  const property = label.tagName.toLowerCase() === "foreignobject" ? "color" : "fill";
+  label.style.setProperty(property, color, "important");
+  label.querySelectorAll("*").forEach((el) => {
+    if (el.style) el.style.setProperty(property, color, "important");
+  });
+}
+
+function fixDiagramContrast(root) {
+  const svg = root.querySelector("svg");
+  if (!svg) return false;
+
+  const shapes = [];
+  svg.querySelectorAll("rect, polygon, path, circle, ellipse").forEach((shape) => {
+    if (shape.closest("defs, marker, clipPath, mask")) return;
+    const style = getComputedStyle(shape);
+    const fill = diagramKit.parse(style.fill);
+    if (!fill) return;
+    const alpha = fill.a * parseFloat(style.fillOpacity || "1") * parseFloat(style.opacity || "1");
+    if (!(alpha > 0.02)) return;
+    const box = shape.getBoundingClientRect();
+    if (box.width < 2 || box.height < 2) return;
+    shapes.push({ box, color: { r: fill.r, g: fill.g, b: fill.b, a: alpha } });
+  });
+
+  let measured = 0;
+  svg.querySelectorAll("text, foreignObject").forEach((label) => {
+    if (label.closest("defs, marker")) return;
+    const host = firstTextHost(label);
+    if (!host) return;
+    const box = label.getBoundingClientRect();
+    if (box.width < 1 || box.height < 1) return;
+    measured += 1;
+
+    const x = box.left + box.width / 2;
+    const y = box.top + box.height / 2;
+    let backdrop = DIAGRAM_BASE;
+    for (const shape of shapes) {
+      const b = shape.box;
+      if (x >= b.left && x <= b.right && y >= b.top && y <= b.bottom) {
+        backdrop = diagramKit.over(shape.color, backdrop);
+      }
+    }
+
+    const chain = [];
+    for (let el = host; el && el !== label; el = el.parentElement) chain.push(el);
+    for (let i = chain.length - 1; i >= 0; i -= 1) {
+      const bg = diagramKit.parse(getComputedStyle(chain[i]).backgroundColor);
+      if (bg && bg.a > 0) backdrop = diagramKit.over(bg, backdrop);
+    }
+
+    const style = getComputedStyle(host);
+    const current = diagramKit.parse(host instanceof SVGElement ? style.fill : style.color);
+    if (current && diagramKit.ratio(diagramKit.over(current, backdrop), backdrop) >= diagramKit.MIN) return;
+    paintLabel(label, diagramKit.pick(backdrop));
+  });
+
+  return measured > 0;
+}
+
+function guardDiagram(body) {
+  if (fixDiagramContrast(body)) return;
+  if (typeof IntersectionObserver !== "function") return;
+  const observer = new IntersectionObserver((entries) => {
+    if (entries.some((entry) => entry.isIntersecting) && fixDiagramContrast(body)) {
+      observer.disconnect();
+    }
+  });
+  observer.observe(body);
+}
+
 async function renderDiagram(root, block, data, key) {
   const body = block.querySelector(".ct-body");
 
@@ -469,6 +719,7 @@ async function renderDiagram(root, block, data, key) {
 
   if (root.dataset.key !== key) return;
   body.innerHTML = svg;
+  guardDiagram(body);
 }
 
 function buildDocument(source, token) {
@@ -479,7 +730,7 @@ function buildDocument(source, token) {
     "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" +
     "<style>" + FRAME_BASE_CSS + "</style></head><body>" +
     source +
-    "<script>" + FRAME_REPORTER(token) + "<\/script></body></html>"
+    "<script>" + FRAME_REPORTER(token) + "\n" + FRAME_GUARD + "<\/script></body></html>"
   );
 }
 
