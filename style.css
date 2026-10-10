@@ -24,13 +24,16 @@
   --raised: #151922;
   --raised-hover: #1b2030;
   --ink: #e6e9ef;
-  --muted: #9099a8;
-  --faint: #667085;
+  --ink-strong: #f5f7fb;
+  --ink-soft: #cfd5e1;
+  --muted: #a8b1c0;
+  --faint: #8a94a6;
   --line: #1e232d;
   --line-2: #2a303c;
   --accent: #8b7cf6;
   --accent-hover: #a095ff;
-  --accent-deep: #7565e6;
+  --accent-deep: #6252d8;
+  --accent-strong: #7262e0;
   --accent-tint: rgba(139, 124, 246, 0.1);
   --accent-line: rgba(139, 124, 246, 0.32);
   --good: #4cc9a4;
@@ -213,7 +216,19 @@ a {
   margin: 0 0 0.5rem;
   padding: 0.1rem 0.8rem;
   border-left: 2px solid var(--accent);
-  color: var(--muted);
+  color: var(--ink-soft);
+}
+
+.stApp [data-testid="stMarkdownContainer"] blockquote :not(code, a, a *, pre, pre *) {
+  color: inherit !important;
+}
+
+.stApp [data-testid="stMarkdownContainer"] :is(strong, b, em, i, th) {
+  color: var(--ink-strong);
+}
+
+.stApp [data-testid="stMarkdownContainer"] td {
+  color: var(--ink);
 }
 
 .stApp [data-testid="stMarkdownContainer"] table {
@@ -443,7 +458,7 @@ button[kind="primaryFormSubmit"]:hover,
 button[data-testid="stBaseButton-primary"]:hover,
 button[data-testid="stBaseButton-primaryFormSubmit"]:hover {
   border-color: var(--accent) !important;
-  background: var(--accent) !important;
+  background: var(--accent-strong) !important;
 }
 
 button[kind="primary"] p,
@@ -1134,6 +1149,41 @@ button[data-baseweb="tab"][aria-selected="true"] {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--r);
+}
+
+.stApp ::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.stApp [data-testid="stWidgetLabel"] :is(p, label, span),
+.stApp [data-testid="stExpander"] summary :is(p, span) {
+  color: var(--ink);
+}
+
+div[data-baseweb="select"] :is(div, span, input) {
+  color: var(--ink);
+}
+
+[data-baseweb="menu"] :is(li, [role="option"], div) {
+  color: var(--ink);
+}
+
+.stButton > button:disabled,
+[data-testid^="stBaseButton-secondary"]:disabled,
+[data-testid="stDownloadButton"] button:disabled {
+  color: var(--muted);
+  background: var(--surface);
+  opacity: 1;
+}
+
+[data-testid="stAlert"] {
+  border: 1px solid var(--line-2);
+  background: var(--raised);
+}
+
+[data-testid="stAlert"] :is(p, div, span, li, a) {
+  color: var(--ink);
 }
 
 @keyframes pulse {
